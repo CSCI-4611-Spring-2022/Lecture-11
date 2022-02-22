@@ -24,8 +24,6 @@ export class MeshViewer extends GraphicsApp
     private light : THREE.DirectionalLight;
     private lightHelper : THREE.Line;
 
-    private meshGroup : THREE.Group;
-
     constructor()
     {
         // Pass in the aspect ratio to the constructor
@@ -46,7 +44,6 @@ export class MeshViewer extends GraphicsApp
         this.debugMaterial = new THREE.MeshBasicMaterial();
         this.light = new THREE.DirectionalLight();
         this.lightHelper = new THREE.Line();
-        this.meshGroup = new THREE.Group();
     }
 
     createScene() : void
@@ -58,7 +55,7 @@ export class MeshViewer extends GraphicsApp
         this.camera.up.set(0, 1, 0);
 
         // Create an ambient light
-        var ambientLight = new THREE.AmbientLight('white', 0.3);
+        var ambientLight = new THREE.AmbientLight('white', 0.5);
         this.scene.add(ambientLight);
 
         // Create a directional light
@@ -82,15 +79,6 @@ export class MeshViewer extends GraphicsApp
 
         // Update all the light visuals
         this.updateLightParameters();
-
-        // Create the skybox material
-        var skyboxMaterial = new THREE.MeshBasicMaterial();
-        skyboxMaterial.side = THREE.BackSide;
-        skyboxMaterial.color.set('black');
-
-        // Create a skybox
-        var skybox = new THREE.Mesh(new THREE.BoxGeometry(1000, 1000, 1000), skyboxMaterial);
-        this.scene.add(skybox);
 
         // Put the debug material into wireframe mode
         this.debugMaterial.wireframe = true;
@@ -122,18 +110,190 @@ export class MeshViewer extends GraphicsApp
         debugController.name('Debug Mode');
         debugController.onChange((value: boolean) => { this.toggleDebugMode(value) });
 
-        // Add a group to the scene 
-        this.scene.add(this.meshGroup);
+        var steve = this.createSteve();
+        this.scene.add(steve);
+    }
 
-        // Create a unit cube as an example
-        var cube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshLambertMaterial({color: 'skyblue'}));
-        this.meshGroup.add(cube);
+    private createSteve() : THREE.Mesh
+    {
+        var steve = new THREE.Mesh();
+
+        // Create the box normals
+        var vertices = this.createBoxVertices(1, 1, 1);
+        steve.geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+
+        // Create the box normals
+        var normals = this.createBoxNormals();
+        steve.geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+
+        // Create the uvs
+        var uvs = this.createBoxTextureCoords();
+        steve.geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+
+        // Create the box indices
+        var indices = this.createBoxIndices();
+        steve.geometry.setIndex(indices);
+
+        var material = new THREE.MeshLambertMaterial();
+        material.map = new THREE.TextureLoader().load('./assets/steve.png');
+        steve.material = material;
+        
+        return steve;
+    }
+
+    private createBoxVertices(width: number, height: number, depth: number) : number[]
+    {
+        var vertices = [];
+
+        // Front face
+        vertices.push(-width/2, -height/2, depth/2);
+        vertices.push(width/2, -height/2, depth/2);
+        vertices.push(width/2, height/2, depth/2);
+        vertices.push(-width/2, height/2, depth/2);
+
+        // Back face
+        vertices.push(width/2, -height/2, -depth/2);
+        vertices.push(-width/2, -height/2, -depth/2);
+        vertices.push(-width/2, height/2, -depth/2);
+        vertices.push(width/2, height/2, -depth/2);
+        
+        // Left face
+        vertices.push(-width/2, -height/2, -depth/2);
+        vertices.push(-width/2, -height/2, depth/2);
+        vertices.push(-width/2, height/2, depth/2);
+        vertices.push(-width/2, height/2, -depth/2);
+        
+        // Right face
+        vertices.push(width/2, -height/2, depth/2);
+        vertices.push(width/2, -height/2, -depth/2);
+        vertices.push(width/2, height/2, -depth/2);
+        vertices.push(width/2, height/2, depth/2);
+        
+        // Top face
+        vertices.push(-width/2, height/2, depth/2);
+        vertices.push(width/2, height/2, depth/2);
+        vertices.push(width/2, height/2, -depth/2);
+        vertices.push(-width/2, height/2, -depth/2);
+        
+        // Bottom face
+        vertices.push(-width/2, -height/2, -depth/2);
+        vertices.push(width/2, -height/2, -depth/2);
+        vertices.push(width/2, -height/2, depth/2);
+        vertices.push(-width/2, -height/2, depth/2);
+    
+        return vertices;
+    }
+
+    private createBoxNormals() : number[]
+    {
+        var normals = [];
+
+        // Front face
+        normals.push(0, 0, 1);
+        normals.push(0, 0, 1);
+        normals.push(0, 0, 1);
+        normals.push(0, 0, 1);
+
+        // Back face
+        normals.push(0, 0, -1);
+        normals.push(0, 0, -1);
+        normals.push(0, 0, -1);
+        normals.push(0, 0, -1);
+
+        // Left face
+        normals.push(-1, 0, 0);
+        normals.push(-1, 0, 0);
+        normals.push(-1, 0, 0);
+        normals.push(-1, 0, 0);
+
+        // Right face
+        normals.push(1, 0, 0);
+        normals.push(1, 0, 0);
+        normals.push(1, 0, 0);
+        normals.push(1, 0, 0);
+
+        // Top face
+        normals.push(0, 1, 0);
+        normals.push(0, 1, 0);
+        normals.push(0, 1, 0);
+        normals.push(0, 1, 0);
+
+        // Bottom face
+        normals.push(0, -1, 0);
+        normals.push(0, -1, 0);
+        normals.push(0, -1, 0);
+        normals.push(0, -1, 0);
+
+        return normals;
+    }
+
+    private createBoxTextureCoords() : number[]
+    {
+        var uvs = [];
+
+        // Front face
+        uvs.push(this.rescale(64, 0, 512, 0, 1), this.rescale(64+64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+64, 0, 512, 0, 1), this.rescale(64+64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+64, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
+
+        // Back face
+        uvs.push(this.rescale(192, 0, 512, 0, 1), this.rescale(64+64, 0, 512, 1, 0));
+        uvs.push(this.rescale(192+64, 0, 512, 0, 1), this.rescale(64+64, 0, 512, 1, 0));
+        uvs.push(this.rescale(192+64, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
+        uvs.push(this.rescale(192, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
+
+        // Left face
+        uvs.push(this.rescale(0, 0, 512, 0, 1), this.rescale(64+64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64, 0, 512, 0, 1), this.rescale(64+64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
+        uvs.push(this.rescale(0, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
+
+        // Right face
+        uvs.push(this.rescale(64+64, 0, 512, 0, 1), this.rescale(64+64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+128, 0, 512, 0, 1), this.rescale(64+64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+128, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+64, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
+
+        // Top face
+        uvs.push(this.rescale(64, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+64, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+64, 0, 512, 0, 1), this.rescale(0, 0, 512, 1, 0));
+        uvs.push(this.rescale(64, 0, 512, 0, 1), this.rescale(0, 0, 512, 1, 0));
+
+        // Bottom face
+        uvs.push(this.rescale(64+64, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+128, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+128, 0, 512, 0, 1), this.rescale(0, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+64, 0, 512, 0, 1), this.rescale(0, 0, 512, 1, 0));
+
+        return uvs;
+    }
+
+    private createBoxIndices() : number[]
+    {
+
+        var indices = [];
+
+        for(var i=0; i < 6; i++)
+        {
+            var start = i*4;
+            indices.push(start, start+1, start+2);
+            indices.push(start+2, start+3, start);
+        }
+
+        return indices;
+    }
+
+    private rescale(x: number, xmin: number, xmax: number, ymin: number, ymax: number) : number
+    {
+        return ymin + (ymax - ymin) * (x - xmin) / (xmax - xmin);
     }
 
     update(deltaTime : number) : void
     {
 
-    }
+    } 
 
     // Mouse event handlers for wizard functionality
     onMouseDown(event: MouseEvent) : void 
@@ -210,7 +370,7 @@ export class MeshViewer extends GraphicsApp
 
     private toggleDebugMode(debugMode: boolean) : void
     {
-        this.meshGroup.children.forEach((elem: THREE.Object3D) => {
+        this.scene.traverse((elem: THREE.Object3D) => {
             if(elem instanceof THREE.Mesh)
             {
                 if(debugMode)
