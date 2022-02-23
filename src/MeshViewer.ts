@@ -7,7 +7,6 @@ export class MeshViewer extends GraphicsApp
     // State variables
     private debugMode : boolean;
     private mouseDrag : boolean;
-    private crushAlpha : number;
 
     // Camera parameters
     private cameraOrbitX : number;
@@ -31,7 +30,6 @@ export class MeshViewer extends GraphicsApp
 
         this.debugMode = false;
         this.mouseDrag = false;
-        this.crushAlpha = 0;
 
         this.cameraOrbitX = 0;
         this.cameraOrbitY = 0;
@@ -118,20 +116,14 @@ export class MeshViewer extends GraphicsApp
     {
         var steve = new THREE.Mesh();
 
-        // Create the box normals
         var vertices = this.createBoxVertices(1, 1, 1);
-        steve.geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-
-        // Create the box normals
         var normals = this.createBoxNormals();
-        steve.geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-
-        // Create the uvs
         var uvs = this.createBoxTextureCoords();
-        steve.geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-
-        // Create the box indices
         var indices = this.createBoxIndices();
+
+        steve.geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        steve.geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+        steve.geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
         steve.geometry.setIndex(indices);
 
         var material = new THREE.MeshLambertMaterial();
@@ -152,35 +144,35 @@ export class MeshViewer extends GraphicsApp
         vertices.push(-width/2, height/2, depth/2);
 
         // Back face
-        vertices.push(width/2, -height/2, -depth/2);
         vertices.push(-width/2, -height/2, -depth/2);
-        vertices.push(-width/2, height/2, -depth/2);
+        vertices.push(width/2, -height/2, -depth/2);
         vertices.push(width/2, height/2, -depth/2);
-        
+        vertices.push(-width/2, height/2, -depth/2);
+
         // Left face
         vertices.push(-width/2, -height/2, -depth/2);
         vertices.push(-width/2, -height/2, depth/2);
         vertices.push(-width/2, height/2, depth/2);
         vertices.push(-width/2, height/2, -depth/2);
-        
-        // Right face
-        vertices.push(width/2, -height/2, depth/2);
+
+        // Left face
         vertices.push(width/2, -height/2, -depth/2);
-        vertices.push(width/2, height/2, -depth/2);
+        vertices.push(width/2, -height/2, depth/2);
         vertices.push(width/2, height/2, depth/2);
-        
+        vertices.push(width/2, height/2, -depth/2);
+
         // Top face
         vertices.push(-width/2, height/2, depth/2);
         vertices.push(width/2, height/2, depth/2);
         vertices.push(width/2, height/2, -depth/2);
         vertices.push(-width/2, height/2, -depth/2);
-        
+
         // Bottom face
-        vertices.push(-width/2, -height/2, -depth/2);
-        vertices.push(width/2, -height/2, -depth/2);
-        vertices.push(width/2, -height/2, depth/2);
         vertices.push(-width/2, -height/2, depth/2);
-    
+        vertices.push(width/2, -height/2, depth/2);
+        vertices.push(width/2, -height/2, -depth/2);
+        vertices.push(-width/2, -height/2, -depth/2);
+        
         return vertices;
     }
 
@@ -223,8 +215,39 @@ export class MeshViewer extends GraphicsApp
         normals.push(0, -1, 0);
         normals.push(0, -1, 0);
         normals.push(0, -1, 0);
-
+       
         return normals;
+    }
+
+    private createBoxIndices() : number[]
+    {
+        var indices = [];
+
+        // Front face
+        indices.push(0, 1, 2);
+        indices.push(2, 3, 0);
+
+        // Back face
+        indices.push(4, 6, 5);
+        indices.push(6, 4, 7);
+
+        // Left face
+        indices.push(8, 9, 10);
+        indices.push(10, 11, 8);
+
+        // Right face
+        indices.push(12, 14, 13);
+        indices.push(14, 12, 15);
+
+        // Top face
+        indices.push(16, 17, 18);
+        indices.push(18, 19, 16);
+
+        // Bottom face
+        indices.push(20, 22, 21);
+        indices.push(22, 20, 23);
+
+        return indices;
     }
 
     private createBoxTextureCoords() : number[]
@@ -238,56 +261,41 @@ export class MeshViewer extends GraphicsApp
         uvs.push(this.rescale(64, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
 
         // Back face
-        uvs.push(this.rescale(192, 0, 512, 0, 1), this.rescale(64+64, 0, 512, 1, 0));
-        uvs.push(this.rescale(192+64, 0, 512, 0, 1), this.rescale(64+64, 0, 512, 1, 0));
-        uvs.push(this.rescale(192+64, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
-        uvs.push(this.rescale(192, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+128, 0, 512, 0, 1), this.rescale(64+64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+64+128, 0, 512, 0, 1), this.rescale(64+64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+64+128, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+128, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
 
         // Left face
-        uvs.push(this.rescale(0, 0, 512, 0, 1), this.rescale(64+64, 0, 512, 1, 0));
-        uvs.push(this.rescale(64, 0, 512, 0, 1), this.rescale(64+64, 0, 512, 1, 0));
-        uvs.push(this.rescale(64, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
-        uvs.push(this.rescale(0, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64-64, 0, 512, 0, 1), this.rescale(64+64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+64-64, 0, 512, 0, 1), this.rescale(64+64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+64-64, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64-64, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
 
         // Right face
         uvs.push(this.rescale(64+64, 0, 512, 0, 1), this.rescale(64+64, 0, 512, 1, 0));
-        uvs.push(this.rescale(64+128, 0, 512, 0, 1), this.rescale(64+64, 0, 512, 1, 0));
-        uvs.push(this.rescale(64+128, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+64+64, 0, 512, 0, 1), this.rescale(64+64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+64+64, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
         uvs.push(this.rescale(64+64, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
 
         // Top face
-        uvs.push(this.rescale(64, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
-        uvs.push(this.rescale(64+64, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
-        uvs.push(this.rescale(64+64, 0, 512, 0, 1), this.rescale(0, 0, 512, 1, 0));
-        uvs.push(this.rescale(64, 0, 512, 0, 1), this.rescale(0, 0, 512, 1, 0));
+        uvs.push(this.rescale(64, 0, 512, 0, 1), this.rescale(64+64-64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+64, 0, 512, 0, 1), this.rescale(64+64-64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+64, 0, 512, 0, 1), this.rescale(64-64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64, 0, 512, 0, 1), this.rescale(64-64, 0, 512, 1, 0));
 
         // Bottom face
-        uvs.push(this.rescale(64+64, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
-        uvs.push(this.rescale(64+128, 0, 512, 0, 1), this.rescale(64, 0, 512, 1, 0));
-        uvs.push(this.rescale(64+128, 0, 512, 0, 1), this.rescale(0, 0, 512, 1, 0));
-        uvs.push(this.rescale(64+64, 0, 512, 0, 1), this.rescale(0, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+64, 0, 512, 0, 1), this.rescale(64+64-64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+64+64, 0, 512, 0, 1), this.rescale(64+64-64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+64+64, 0, 512, 0, 1), this.rescale(64-64, 0, 512, 1, 0));
+        uvs.push(this.rescale(64+64, 0, 512, 0, 1), this.rescale(64-64, 0, 512, 1, 0));
 
         return uvs;
     }
 
-    private createBoxIndices() : number[]
-    {
-
-        var indices = [];
-
-        for(var i=0; i < 6; i++)
-        {
-            var start = i*4;
-            indices.push(start, start+1, start+2);
-            indices.push(start+2, start+3, start);
-        }
-
-        return indices;
-    }
-
     private rescale(x: number, xmin: number, xmax: number, ymin: number, ymax: number) : number
     {
-        return ymin + (ymax - ymin) * (x - xmin) / (xmax - xmin);
+        return ymin + (ymax - ymin) * (x - xmin) / (xmax - xmin)
     }
 
     update(deltaTime : number) : void
